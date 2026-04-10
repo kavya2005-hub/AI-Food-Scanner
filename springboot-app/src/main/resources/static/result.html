@@ -1,0 +1,569 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriLens — Result</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+          --bg:          #050c08;
+          --bg2:         #091410;
+          --bg3:         #0f1f14;
+          --border:      rgba(255,255,255,0.06);
+          --border2:     rgba(255,255,255,0.11);
+          --text:        #f0f0f0;
+          --sub:         rgba(255,255,255,0.42);
+          --accent:      #a8ff78;
+          --accent2:     #78ffd6;
+          --accent-glow: rgba(168,255,120,0.28);
+          --glass:       rgba(255,255,255,0.055);
+          --glass-border:rgba(255,255,255,0.10);
+          --amber:       #ffbd59;
+          --teal:        #34d3a3;
+          --red:         #f26d6d;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+          background: var(--bg);
+          color: var(--text);
+          font-family: 'DM Sans', sans-serif;
+          min-height: 100vh;
+          padding-bottom: 90px;
+          overflow-x: hidden;
+        }
+
+        /* ── AMBIENT BG ── */
+        .bg-fixed { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(90px); animation: orbF ease-in-out infinite alternate; }
+        .o1 { width:600px;height:600px; background:radial-gradient(circle,#16613570,transparent 70%); top:-240px;left:-160px; animation-duration:18s; }
+        .o2 { width:450px;height:450px; background:radial-gradient(circle,#0a3d2055,transparent 70%); bottom:-200px;right:-100px; animation-duration:22s;animation-delay:-6s; }
+        .o3 { width:340px;height:340px; background:radial-gradient(circle,rgba(168,255,120,0.09),transparent 70%); top:40%;left:55%; animation-duration:14s;animation-delay:-3s; }
+        @keyframes orbF { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(24px,-18px) scale(1.06)} }
+
+        .bg-grid {
+          position: fixed; inset: 0; z-index: 0; pointer-events: none;
+          background-image:
+            linear-gradient(rgba(168,255,120,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(168,255,120,0.02) 1px, transparent 1px);
+          background-size: 56px 56px;
+        }
+
+        /* leaf speckles */
+        .ls {
+          position: fixed; opacity: 0.03;
+          animation: leafDrift linear infinite;
+          pointer-events: none; z-index: 0;
+        }
+        @keyframes leafDrift {
+          0%   { transform: translateY(105vh) rotate(0deg); opacity: 0; }
+          6%   { opacity: 0.03; }
+          94%  { opacity: 0.03; }
+          100% { transform: translateY(-5vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* ── NAV ── */
+        nav {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 0 auto;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 22px 20px 0;
+        }
+        .logo {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800; font-size: 1.2rem; letter-spacing: -0.03em;
+          display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--text);
+        }
+        .logo-mark {
+          width: 30px; height: 30px; border-radius: 9px;
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 0 18px var(--accent-glow);
+        }
+        .logo-mark svg { width: 14px; height: 14px; stroke: #061410; stroke-width: 2.5; }
+        .back-btn {
+          display: flex; align-items: center; gap: 6px;
+          background: var(--glass);
+          border: 1px solid var(--glass-border);
+          border-radius: 30px; padding: 8px 16px;
+          color: var(--sub); font-size: .8rem; font-weight: 500;
+          cursor: pointer; text-decoration: none; transition: all .2s;
+          backdrop-filter: blur(12px); font-family: 'DM Sans', sans-serif;
+        }
+        .back-btn:hover { border-color: rgba(168,255,120,0.3); color: var(--accent); }
+        .back-btn svg { width: 14px; height: 14px; }
+
+        /* ── ANIMATIONS ── */
+        @keyframes floatUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ── FOOD HERO ── */
+        .food-hero {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 0 auto;
+          padding: 28px 20px 0;
+          display: flex; align-items: flex-start; gap: 18px;
+        }
+        .food-emoji-wrap {
+          width: 82px; height: 82px; flex-shrink: 0;
+          background: var(--glass);
+          border: 1px solid rgba(168,255,120,0.18);
+          border-radius: 22px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 2.6rem; line-height: 1;
+          backdrop-filter: blur(12px);
+          box-shadow: 0 0 30px rgba(168,255,120,0.06);
+        }
+        .food-meta { flex: 1; padding-top: 4px; }
+        .food-category {
+          font-size: .67rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+          color: var(--sub); margin-bottom: 6px;
+        }
+        .food-name {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800; font-size: 2.2rem; letter-spacing: -.05em; line-height: 1;
+          color: var(--text); margin-bottom: 10px;
+        }
+        .food-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .tag {
+          font-size: .68rem; font-weight: 700; letter-spacing: .06em;
+          border-radius: 30px; padding: 4px 12px;
+        }
+        .tag-conf {
+          background: rgba(168,255,120,0.08);
+          border: 1px solid rgba(168,255,120,0.22);
+          color: var(--accent);
+        }
+        .tag-cat {
+          background: var(--glass); border: 1px solid var(--glass-border); color: var(--sub);
+        }
+
+        /* ── SECTION LABEL ── */
+        .section-label {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 26px auto 0; padding: 0 20px;
+          font-size: .67rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+          color: var(--sub);
+          display: flex; align-items: center; gap: 10px;
+        }
+        .section-label::after {
+          content: ''; flex: 1; height: 1px;
+          background: linear-gradient(90deg, var(--border2), transparent);
+        }
+
+        /* ── MACRO CARDS ── */
+        .macro-wrap {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 12px auto 0; padding: 0 20px;
+          display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .macro-card {
+          background: var(--glass);
+          border: 1px solid var(--glass-border);
+          border-radius: 18px; padding: 18px 18px 16px;
+          position: relative; overflow: hidden;
+          backdrop-filter: blur(16px);
+          animation: floatUp .4s cubic-bezier(.22,1,.36,1) both;
+          transition: border-color .2s, transform .2s;
+        }
+        .macro-card:hover { transform: translateY(-2px); }
+        .macro-card:nth-child(1){animation-delay:.05s}
+        .macro-card:nth-child(2){animation-delay:.10s}
+        .macro-card:nth-child(3){animation-delay:.15s}
+        .macro-card:nth-child(4){animation-delay:.20s}
+
+        /* top accent line */
+        .macro-card::before {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+          border-radius: 2px 2px 0 0;
+        }
+        .macro-card.cal::before  { background: linear-gradient(90deg,var(--amber),transparent); }
+        .macro-card.prot::before { background: linear-gradient(90deg,var(--teal),transparent); }
+        .macro-card.fiber::before{ background: linear-gradient(90deg,var(--accent),transparent); }
+        .macro-card.sugar::before{ background: linear-gradient(90deg,#f06595,transparent); }
+
+        /* shimmer glow on hover */
+        .macro-card::after {
+          content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .3s;
+          background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(168,255,120,0.05), transparent 70%);
+        }
+        .macro-card:hover::after { opacity: 1; }
+
+        .mc-icon {
+          width: 32px; height: 32px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          margin-bottom: 12px; font-size: 1rem;
+          border: 1px solid transparent;
+        }
+        .mc-icon.cal  { background: rgba(255,189,89,.1);  border-color: rgba(255,189,89,.18); }
+        .mc-icon.prot { background: rgba(52,211,163,.1);  border-color: rgba(52,211,163,.18); }
+        .mc-icon.fiber{ background: rgba(168,255,120,.1); border-color: rgba(168,255,120,.18); }
+        .mc-icon.sugar{ background: rgba(240,101,149,.1); border-color: rgba(240,101,149,.18); }
+
+        .mc-label {
+          font-size: .64rem; font-weight: 700; letter-spacing: .12em;
+          text-transform: uppercase; color: var(--sub); margin-bottom: 4px;
+        }
+        .mc-val {
+          font-family: 'Syne', sans-serif;
+          font-size: 1.9rem; font-weight: 800; letter-spacing: -.04em; line-height: 1; color: var(--text);
+        }
+        .mc-unit { font-family: 'DM Sans', sans-serif; font-size: .74rem; font-weight: 300; color: var(--sub); margin-left: 2px; }
+
+        /* ── HEALTH SCORE ── */
+        .score-wrap {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 10px auto 0; padding: 0 20px;
+          animation: floatUp .4s .25s cubic-bezier(.22,1,.36,1) both;
+        }
+        .score-card {
+          background: var(--glass);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px; padding: 22px;
+          display: flex; align-items: center; gap: 20px;
+          backdrop-filter: blur(16px); position: relative; overflow: hidden;
+        }
+        .score-card::before {
+          content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(168,255,120,0.25), transparent);
+        }
+
+        .donut-wrap { position: relative; width: 96px; height: 96px; flex-shrink: 0; }
+        .donut-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .d-track { fill: none; stroke: var(--bg3); stroke-width: 7; }
+        .d-fill {
+          fill: none; stroke-width: 7; stroke-linecap: round;
+          stroke-dasharray: 263; stroke-dashoffset: 263;
+          transition: stroke-dashoffset 1.2s cubic-bezier(.22,1,.36,1), stroke .3s;
+        }
+        .d-num {
+          position: absolute; inset: 0;
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; letter-spacing: -.03em;
+        }
+        .d-num span { font-size: .6rem; font-weight: 400; font-family: 'DM Sans', sans-serif; color: var(--sub); margin-top: -2px; }
+
+        .score-text { flex: 1; }
+        .score-verdict {
+          font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800;
+          letter-spacing: -.03em; margin-bottom: 8px;
+        }
+        .score-bar-wrap { margin-bottom: 10px; }
+        .score-bar-bg { height: 6px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+        .score-bar-fill {
+          height: 100%; border-radius: 4px;
+          transition: width 1.2s cubic-bezier(.22,1,.36,1); width: 0%;
+        }
+        .score-desc { font-size: .8rem; color: var(--sub); line-height: 1.62; font-weight: 300; }
+
+        /* ── BREAKDOWN ── */
+        .breakdown-wrap {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 10px auto 0; padding: 0 20px;
+          animation: floatUp .4s .3s cubic-bezier(.22,1,.36,1) both;
+        }
+        .breakdown-card {
+          background: var(--glass);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px; overflow: hidden;
+          backdrop-filter: blur(16px); position: relative;
+        }
+        .breakdown-card::before {
+          content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(168,255,120,0.2), transparent);
+        }
+        .brow {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 18px; border-bottom: 1px solid var(--border);
+          transition: background .18s;
+        }
+        .brow:last-child { border-bottom: none; }
+        .brow:hover { background: rgba(168,255,120,0.025); }
+        .brow-left { display: flex; align-items: center; gap: 10px; }
+        .brow-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
+        .brow-name { font-size: .87rem; font-weight: 500; color: var(--text); }
+        .brow-desc { font-size: .72rem; color: var(--sub); margin-top: 1px; font-weight: 300; }
+        .brow-right { text-align: right; }
+        .brow-val {
+          font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; letter-spacing: -.02em;
+        }
+        .brow-pct { font-size: .7rem; color: var(--sub); margin-top: 2px; }
+
+        /* ── TIPS ── */
+        .tips-wrap {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 10px auto 0; padding: 0 20px;
+          animation: floatUp .4s .35s cubic-bezier(.22,1,.36,1) both;
+        }
+        .tips-card {
+          background: var(--glass);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px; padding: 18px;
+          backdrop-filter: blur(16px); position: relative; overflow: hidden;
+        }
+        .tips-card::before {
+          content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(168,255,120,0.2), transparent);
+        }
+        .tip-item {
+          display: flex; gap: 12px; padding: 10px 0;
+          border-bottom: 1px solid var(--border);
+        }
+        .tip-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .tip-item:first-child { padding-top: 0; }
+        .tip-icon {
+          width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          font-size: .9rem; border: 1px solid rgba(168,255,120,0.12);
+        }
+        .tip-text p { font-size: .82rem; color: var(--text); font-weight: 500; margin-bottom: 2px; font-family: 'Syne', sans-serif; letter-spacing: -.01em; }
+        .tip-text span { font-size: .76rem; color: var(--sub); line-height: 1.55; font-weight: 300; }
+
+        /* ── SCAN AGAIN ── */
+        .scan-again-wrap {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 16px auto 0; padding: 0 20px;
+          animation: floatUp .4s .4s cubic-bezier(.22,1,.36,1) both;
+        }
+        .scan-again-btn {
+          width: 100%; padding: 17px; border: none; border-radius: 16px;
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          color: #061410;
+          font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: -.01em;
+          cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+          transition: all .22s; box-shadow: 0 8px 32px rgba(168,255,120,0.22);
+          text-decoration: none;
+        }
+        .scan-again-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(168,255,120,0.38); }
+        .scan-again-btn svg { width: 18px; height: 18px; }
+
+        /* no data */
+        .no-data {
+          text-align: center; padding: 80px 20px;
+          font-family: 'Syne', sans-serif; font-size: 1.1rem; color: var(--sub);
+        }
+        .no-data a {
+          color: var(--accent); text-decoration: none;
+          background: rgba(168,255,120,0.08); border: 1px solid rgba(168,255,120,0.2);
+          border-radius: 30px; padding: 8px 20px; display: inline-block; margin-top: 10px;
+          font-size: .85rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- AMBIENT -->
+<div class="bg-fixed">
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+</div>
+<div class="bg-grid"></div>
+
+<!-- NAV -->
+<nav>
+    <a class="logo" href="#">
+        <div class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                <path d="M11 8v6M8 11h6"/>
+            </svg>
+        </div>
+        NutriLens
+    </a>
+    <a class="back-btn" href="scan.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Scan Again
+    </a>
+</nav>
+
+<div id="content">
+    <div class="no-data">Loading result…<br><br><a href="scan.html">← Back to scanner</a></div>
+</div>
+
+</script>
+</body>
+</html>
+<script>
+  // Leaf speckles
+  ['🌿','🍃','🌱','🍀','✦','·'].forEach((em, i) => {
+    for (let j = 0; j < 2; j++) {
+      const el = document.createElement('div');
+      el.className = 'ls';
+      el.textContent = em;
+      el.style.cssText = `left:${Math.random()*100}%;animation-duration:${22+Math.random()*28}s;animation-delay:-${Math.random()*35}s;font-size:${0.7+Math.random()}rem`;
+      document.body.appendChild(el);
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const name   = (params.get('food')       || '').trim();
+
+    if (!name) {
+      document.getElementById('content').innerHTML =
+        '<div class="no-data">No scan data found.<br><br><a href="scan.html">← Go to scanner</a></div>';
+      return;
+    }
+
+    const conf   = params.get('confidence') || '0';
+    const cal    = params.get('calories')   || 'N/A';
+    const prot   = params.get('protein')    || 'N/A';
+    const fat    = params.get('fat')        || 'N/A';
+    const fib    = params.get('fiber')      || 'N/A';
+    const sug    = params.get('sugar')      || 'N/A';
+    const health = params.get('health')     || 'No data available';
+    const risk   = params.get('risk')       || 'No data available';
+
+    const EMOJI = {
+      apple:'🍎', banana:'🍌', beetroot:'🫚', 'bell pepper':'🫑',
+      cabbage:'🥬', capsicum:'🫑', carrot:'🥕', cauliflower:'🥦',
+      'chilli pepper':'🌶️', corn:'🌽', cucumber:'🥒', eggplant:'🍆',
+      garlic:'🧄', ginger:'🫚', grapes:'🍇', jalepeno:'🌶️',
+      kiwi:'🥝', lemon:'🍋', lettuce:'🥬', mango:'🥭',
+      onion:'🧅', orange:'🍊', paprika:'🌶️', pear:'🍐',
+      peas:'🫛', pineapple:'🍍', pomegranate:'🍎', potato:'🥔',
+      raddish:'🌱', 'soy beans':'🫘', spinach:'🥬', sweetcorn:'🌽',
+      sweetpotato:'🍠', tomato:'🍅', turnip:'🌱', watermelon:'🍉'
+    };
+    const emoji = EMOJI[name] || '🥗';
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+    const calNum = parseFloat(cal);
+    let score = 70, sColor = '#a8ff78', verdict = 'Healthy Choice 🌿';
+    if (!isNaN(calNum)) {
+      if      (calNum < 30)  { score = 93; sColor = '#a8ff78'; verdict = 'Very Healthy 🌿'; }
+      else if (calNum < 60)  { score = 84; sColor = '#a8ff78'; verdict = 'Healthy Choice 🌿'; }
+      else if (calNum < 100) { score = 72; sColor = '#34d3a3'; verdict = 'Good Choice'; }
+      else if (calNum < 200) { score = 55; sColor = '#ffbd59'; verdict = 'Eat in Moderation'; }
+      else                   { score = 38; sColor = '#f26d6d'; verdict = 'Limit Intake ⚠️'; }
+    }
+
+    const brow = (label, color, val, unit, desc) => `
+      <div class="brow">
+        <div class="brow-left">
+          <div class="brow-dot" style="background:${color};box-shadow:0 0 5px ${color}66"></div>
+          <div><div class="brow-name">${label}</div><div class="brow-desc">${desc}</div></div>
+        </div>
+        <div class="brow-right">
+          <div class="brow-val" style="color:${color}">${val}<span style="font-size:.7rem;color:var(--sub);margin-left:2px">${unit}</span></div>
+        </div>
+      </div>`;
+
+    document.getElementById('content').innerHTML = `
+      <div class="food-hero">
+        <div class="food-emoji-wrap">${emoji}</div>
+        <div class="food-meta">
+          <div class="food-category">Detected Food</div>
+          <div class="food-name">${cap(name)}</div>
+          <div class="food-tags">
+            <span class="tag tag-conf">✦ ${conf}% match</span>
+            <span class="tag tag-cat">per 100g</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Nutrition Facts</div>
+      <div class="macro-wrap">
+        <div class="macro-card cal">
+          <div class="mc-icon cal">🔥</div>
+          <div class="mc-label">Calories</div>
+          <div class="mc-val">${cal}<span class="mc-unit">kcal</span></div>
+        </div>
+        <div class="macro-card prot">
+          <div class="mc-icon prot">💪</div>
+          <div class="mc-label">Protein</div>
+          <div class="mc-val">${prot}<span class="mc-unit">g</span></div>
+        </div>
+        <div class="macro-card fiber">
+          <div class="mc-icon fiber">🌿</div>
+          <div class="mc-label">Fiber</div>
+          <div class="mc-val">${fib}<span class="mc-unit">g</span></div>
+        </div>
+        <div class="macro-card sugar">
+          <div class="mc-icon sugar">🍬</div>
+          <div class="mc-label">Sugar</div>
+          <div class="mc-val">${sug}<span class="mc-unit">g</span></div>
+        </div>
+      </div>
+
+      <div class="section-label">Health Score</div>
+      <div class="score-wrap">
+        <div class="score-card">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 100 100">
+              <circle class="d-track" cx="50" cy="50" r="42"/>
+              <circle class="d-fill" id="donutFill" cx="50" cy="50" r="42"/>
+            </svg>
+            <div class="d-num" id="donutNum" style="color:${sColor}">0<span>/100</span></div>
+          </div>
+          <div class="score-text">
+            <div class="score-verdict" style="color:${sColor}">${verdict}</div>
+            <div class="score-bar-wrap">
+              <div class="score-bar-bg">
+                <div class="score-bar-fill" id="scoreBar" style="background:${sColor}"></div>
+              </div>
+            </div>
+            <div class="score-desc">Fat: <b>${fat}g</b> &nbsp;|&nbsp; Per 100g serving.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Full Breakdown</div>
+      <div class="breakdown-wrap">
+        <div class="breakdown-card">
+          ${brow('Calories',  '#ffbd59', cal,  'kcal', 'Energy per 100g')}
+          ${brow('Protein',   '#34d3a3', prot, 'g',    'Muscle building')}
+          ${brow('Fat',       '#f26d6d', fat,  'g',    'Total fat')}
+          ${brow('Fiber',     '#a8ff78', fib,  'g',    'Digestive health')}
+          ${brow('Sugar',     '#f06595', sug,  'g',    'Natural sugars')}
+        </div>
+      </div>
+
+      <div class="section-label">Health Insights</div>
+      <div class="tips-wrap">
+        <div class="tips-card">
+          <div class="tip-item">
+            <div class="tip-icon" style="background:rgba(168,255,120,.08)">🌿</div>
+            <div class="tip-text"><p>Health Effect</p><span>${health}</span></div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon" style="background:rgba(255,189,89,.08)">⚠️</div>
+            <div class="tip-text"><p>Disease Risk</p><span>${risk}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scan-again-wrap">
+        <a class="scan-again-btn" href="scan.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          Scan Another Food
+        </a>
+      </div>
+    `;
+
+    // Animate donut + score bar
+    const circ = 2 * Math.PI * 42;
+    const fill = document.getElementById('donutFill');
+    fill.style.stroke = sColor;
+    fill.style.strokeDasharray = circ;
+    setTimeout(() => {
+      fill.style.strokeDashoffset = circ - (score / 100) * circ;
+      document.getElementById('scoreBar').style.width = score + '%';
+      let cur = 0;
+      const iv = setInterval(() => {
+        cur = Math.min(cur + 2, score);
+        document.getElementById('donutNum').innerHTML = Math.round(cur) + '<span>/100</span>';
+        if (cur >= score) clearInterval(iv);
+      }, 20);
+    }, 150);
+  });
+</script>
+</body>
+</html>

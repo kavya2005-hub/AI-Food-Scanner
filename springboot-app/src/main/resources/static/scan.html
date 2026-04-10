@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriLens — Scan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+          --bg:          #050c08;
+          --bg2:         #091410;
+          --bg3:         #0f1f14;
+          --border:      rgba(255,255,255,0.06);
+          --border2:     rgba(255,255,255,0.11);
+          --text:        #f0f0f0;
+          --sub:         rgba(255,255,255,0.42);
+          --accent:      #a8ff78;
+          --accent2:     #78ffd6;
+          --accent-glow: rgba(168,255,120,0.28);
+          --amber:       #ffbd59;
+          --glass:       rgba(255,255,255,0.055);
+          --glass-border:rgba(255,255,255,0.10);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+          background: var(--bg);
+          color: var(--text);
+          font-family: 'DM Sans', sans-serif;
+          min-height: 100vh;
+          padding-bottom: 90px;
+          overflow-x: hidden;
+        }
+
+        /* ── AMBIENT BG ── */
+        .bg-fixed { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(90px); animation: orbF ease-in-out infinite alternate; }
+        .o1 { width:600px;height:600px; background:radial-gradient(circle,#16613570,transparent 70%); top:-260px;left:-180px; animation-duration:18s; }
+        .o2 { width:450px;height:450px; background:radial-gradient(circle,#0a3d2055,transparent 70%); bottom:-200px;right:-100px; animation-duration:22s;animation-delay:-6s; }
+        .o3 { width:350px;height:350px; background:radial-gradient(circle,rgba(168,255,120,0.09),transparent 70%); top:45%;left:60%; animation-duration:14s;animation-delay:-3s; }
+        @keyframes orbF { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(24px,-18px) scale(1.06)} }
+
+        .bg-grid {
+          position: fixed; inset: 0; z-index: 0; pointer-events: none;
+          background-image:
+            linear-gradient(rgba(168,255,120,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(168,255,120,0.02) 1px, transparent 1px);
+          background-size: 56px 56px;
+        }
+
+        /* leaf speckles */
+        .ls {
+          position: fixed; font-size: 1rem; opacity: 0.035;
+          animation: leafDrift linear infinite;
+          pointer-events: none; z-index: 0;
+        }
+        @keyframes leafDrift {
+          0%   { transform: translateY(105vh) rotate(0deg); opacity: 0; }
+          6%   { opacity: 0.035; }
+          94%  { opacity: 0.035; }
+          100% { transform: translateY(-5vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* ── NAV ── */
+        nav {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 0 auto;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 22px 20px 0;
+        }
+        .logo {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800; font-size: 1.2rem; letter-spacing: -0.03em;
+          display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--text);
+        }
+        .logo-mark {
+          width: 30px; height: 30px; border-radius: 9px;
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 0 18px var(--accent-glow);
+        }
+        .logo-mark svg { width: 14px; height: 14px; stroke: #061410; stroke-width: 2.5; }
+        .nav-badge {
+          font-size: .68rem; font-weight: 700;
+          letter-spacing: .12em; text-transform: uppercase;
+          color: var(--accent);
+          background: rgba(168,255,120,0.08);
+          border: 1px solid rgba(168,255,120,0.2);
+          border-radius: 30px; padding: 5px 14px;
+        }
+
+        /* ── DAILY ANALYSIS NAV BTN ── */
+        .daily-btn {
+          display: flex; align-items: center; gap: 7px;
+          padding: 9px 18px; border: none; border-radius: 30px; cursor: pointer;
+          font-family: 'Syne', sans-serif; font-size: .75rem; font-weight: 700;
+          letter-spacing: .04em; text-transform: uppercase; text-decoration: none;
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          color: #061410;
+          box-shadow: 0 0 18px rgba(168,255,120,0.28), 0 2px 8px rgba(0,0,0,0.3);
+          transition: transform .22s, box-shadow .22s;
+          white-space: nowrap;
+        }
+        .daily-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+        .daily-btn:hover {
+          transform: translateY(-2px) scale(1.04);
+          box-shadow: 0 0 32px rgba(168,255,120,0.45), 0 4px 16px rgba(0,0,0,0.35);
+        }
+        .daily-btn:active { transform: translateY(0) scale(0.98); }
+
+        /* ── HERO ── */
+        .hero {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 0 auto;
+          padding: 30px 20px 0; text-align: center;
+        }
+        .hero-title {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800; font-size: 2rem;
+          letter-spacing: -0.04em; line-height: 1.12; margin-bottom: 10px;
+        }
+        .hero-title .hl {
+          background: linear-gradient(90deg, var(--accent), var(--accent2));
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-sub { font-size: .88rem; color: var(--sub); font-weight: 300; line-height: 1.65; }
+
+        /* ── MODE TOGGLE ── */
+        .mode-toggle {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 22px auto 0; padding: 0 20px;
+        }
+        .toggle-wrap {
+          display: flex;
+          background: var(--glass);
+          border: 1px solid var(--glass-border);
+          border-radius: 14px; padding: 4px; gap: 4px;
+          backdrop-filter: blur(16px);
+        }
+        .tog-btn {
+          flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+          padding: 11px 16px; border: none; border-radius: 10px;
+          background: transparent; color: var(--sub);
+          font-family: 'DM Sans', sans-serif;
+          font-size: .84rem; font-weight: 500; cursor: pointer; transition: all .22s;
+        }
+        .tog-btn.on {
+          background: rgba(168,255,120,0.1);
+          color: var(--accent);
+          border: 1px solid rgba(168,255,120,0.22);
+          box-shadow: 0 0 18px rgba(168,255,120,0.08);
+        }
+        .tog-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+        /* ── ZONE ── */
+        .zone-wrap {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 14px auto 0; padding: 0 20px;
+        }
+
+        /* drop zone */
+        .drop-zone {
+          width: 100%;
+          border: 1.5px dashed rgba(168,255,120,0.22); border-radius: 24px;
+          background: var(--glass);
+          padding: 54px 24px;
+          display: none; flex-direction: column; align-items: center; gap: 16px;
+          cursor: pointer; transition: all .28s; position: relative; overflow: hidden;
+          backdrop-filter: blur(16px);
+        }
+        .drop-zone::before {
+          content: ''; position: absolute; inset: 0;
+          background: radial-gradient(ellipse 65% 50% at 50% 0%, rgba(168,255,120,0.04), transparent 70%);
+          pointer-events: none;
+        }
+        /* top shimmer */
+        .drop-zone::after {
+          content: ''; position: absolute; top: 0; left: 14%; right: 14%; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(168,255,120,0.3), transparent);
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+          border-color: rgba(168,255,120,0.5);
+          background: rgba(168,255,120,0.04);
+        }
+        .dz-icon {
+          width: 68px; height: 68px;
+          background: rgba(168,255,120,0.07);
+          border: 1.5px solid rgba(168,255,120,0.18);
+          border-radius: 18px;
+          display: flex; align-items: center; justify-content: center; transition: all .25s;
+        }
+        .drop-zone:hover .dz-icon { transform: scale(1.06); background: rgba(168,255,120,0.12); }
+        .dz-icon svg { width: 28px; height: 28px; stroke: var(--accent); }
+        .dz-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; letter-spacing: -.02em; color: var(--text); }
+        .dz-sub { font-size: .8rem; color: var(--sub); text-align: center; line-height: 1.55; font-weight: 300; }
+        .dz-btn {
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          color: #061410; border: none; border-radius: 30px;
+          padding: 11px 26px;
+          font-family: 'Syne', sans-serif;
+          font-size: .84rem; font-weight: 700; cursor: pointer; transition: all .2s;
+          margin-top: 4px; box-shadow: 0 0 16px rgba(168,255,120,0.18);
+        }
+        .dz-btn:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(168,255,120,0.32); }
+
+        /* preview */
+        .preview-box {
+          width: 100%; aspect-ratio: 4/3; border-radius: 24px; overflow: hidden;
+          position: relative;
+          background: var(--bg2);
+          border: 1.5px solid rgba(168,255,120,0.15); display: none;
+          box-shadow: 0 0 40px rgba(168,255,120,0.05);
+        }
+        .preview-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .preview-change {
+          position: absolute; bottom: 14px; right: 14px;
+          background: rgba(5,12,8,0.82); backdrop-filter: blur(10px);
+          border: 1px solid var(--border2); border-radius: 30px;
+          padding: 7px 16px; font-size: .75rem; font-weight: 500;
+          color: var(--text); cursor: pointer; transition: all .2s;
+          font-family: 'DM Sans', sans-serif;
+        }
+        .preview-change:hover { border-color: rgba(168,255,120,0.35); color: var(--accent); }
+
+        /* camera */
+        .cam-box {
+          width: 100%; aspect-ratio: 1/1; border-radius: 24px; overflow: hidden;
+          position: relative;
+          background: var(--bg2);
+          border: 1.5px solid rgba(168,255,120,0.15); display: none;
+          box-shadow: 0 0 50px rgba(168,255,120,0.06);
+        }
+        .cam-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* scanner corners */
+        .corner { position: absolute; width: 28px; height: 28px; z-index: 4; pointer-events: none; }
+        .corner::before, .corner::after { content: ''; position: absolute; background: var(--accent); border-radius: 1.5px; }
+        .corner::before { width: 100%; height: 2px; top: 0; }
+        .corner::after { width: 2px; height: 100%; left: 0; }
+        .corner.tl { top: 14px; left: 14px; }
+        .corner.tr { top: 14px; right: 14px; transform: scaleX(-1); }
+        .corner.bl { bottom: 14px; left: 14px; transform: scaleY(-1); }
+        .corner.br { bottom: 14px; right: 14px; transform: scale(-1); }
+
+        /* sweep line */
+        .sweep {
+          position: absolute; left: 14px; right: 14px; height: 1.5px;
+          background: linear-gradient(90deg, transparent, var(--accent), transparent);
+          box-shadow: 0 0 12px rgba(168,255,120,0.7);
+          display: none; animation: sweepAnim 2.6s ease-in-out infinite; z-index: 5;
+        }
+        @keyframes sweepAnim {
+          0%   { top: 14px; opacity: 0; }
+          8%   { opacity: 1; }
+          92%  { opacity: 1; }
+          100% { top: calc(100% - 16px); opacity: 0; }
+        }
+        .cam-tip {
+          text-align: center; font-size: .75rem; color: var(--sub);
+          margin-top: 10px; font-weight: 300;
+        }
+
+        /* analyzing overlay */
+        .overlay {
+          position: absolute; inset: 0;
+          background: rgba(5,12,8,0.85); backdrop-filter: blur(8px);
+          display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+          z-index: 10; border-radius: 22px;
+        }
+        .overlay.show { display: flex; }
+        .spin-ring {
+          width: 50px; height: 50px;
+          border: 2.5px solid rgba(168,255,120,0.1);
+          border-top-color: var(--accent);
+          border-right-color: rgba(168,255,120,0.4);
+          border-radius: 50%; animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .ov-label { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); }
+        .ov-sub { font-size: .75rem; color: var(--sub); margin-top: -8px; font-weight: 300; }
+
+        /* pulse rings on overlay */
+        .pulse-ring {
+          position: absolute;
+          width: 90px; height: 90px; border-radius: 50%;
+          border: 1px solid rgba(168,255,120,0.15);
+          animation: pulseRing 2s ease-out infinite;
+        }
+        .pulse-ring:nth-child(2) { animation-delay: .6s; }
+        .pulse-ring:nth-child(3) { animation-delay: 1.2s; }
+        @keyframes pulseRing {
+          0%   { transform: scale(0.8); opacity: 0.6; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        /* ── CTA ── */
+        .cta-wrap {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 14px auto 0; padding: 0 20px;
+        }
+        .analyze-btn {
+          width: 100%; padding: 17px; border: none; border-radius: 16px;
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          color: #061410;
+          font-family: 'Syne', sans-serif;
+          font-weight: 700; font-size: 1rem; letter-spacing: -.01em;
+          cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+          transition: all .22s;
+          box-shadow: 0 0 28px rgba(168,255,120,0.22);
+        }
+        .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(168,255,120,0.36); }
+        .analyze-btn:disabled {
+          background: var(--glass); color: var(--sub);
+          cursor: not-allowed; transform: none; box-shadow: none;
+          border: 1px solid var(--glass-border);
+        }
+        .analyze-btn svg { width: 18px; height: 18px; }
+
+        /* trust strip */
+        .trust-strip {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 18px auto 0; padding: 0 20px;
+          display: flex; align-items: center; justify-content: center; gap: 18px;
+        }
+        .trust-item { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: var(--sub); font-weight: 300; }
+        .trust-item svg { width: 13px; height: 13px; stroke: var(--accent); flex-shrink: 0; }
+        .trust-sep { width: 3px; height: 3px; background: var(--border2); border-radius: 50%; }
+
+        /* ── SUGGESTIONS PANEL ── */
+        #sugPanel {
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 20px auto 0; padding: 0 20px;
+          display: none;
+          animation: floatUp .4s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes floatUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+
+        .sug-card {
+          background: var(--glass);
+          border: 1px solid var(--glass-border);
+          border-radius: 24px; overflow: hidden;
+          backdrop-filter: blur(20px);
+          position: relative;
+        }
+        /* top shimmer on card */
+        .sug-card::before {
+          content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(168,255,120,0.35), transparent);
+        }
+        .sug-head { padding: 22px 22px 0; }
+        .sug-title {
+          font-family: 'Syne', sans-serif;
+          font-size: 1.2rem; font-weight: 800; letter-spacing: -.03em; margin-bottom: 6px;
+        }
+        .sug-sub {
+          font-size: .82rem; color: var(--sub); line-height: 1.58; font-weight: 300;
+          padding-bottom: 18px; border-bottom: 1px solid var(--border);
+        }
+        .sug-sub b { color: var(--amber); font-weight: 600; }
+
+        .slist { padding: 14px 14px 0; display: flex; flex-direction: column; gap: 9px; }
+
+        .sitem {
+          display: flex; align-items: center; gap: 14px;
+          padding: 13px 15px; border-radius: 14px;
+          border: 1px solid var(--border2);
+          background: rgba(255,255,255,0.03);
+          cursor: pointer; transition: all .2s;
+        }
+        .sitem:hover { border-color: rgba(168,255,120,0.28); background: rgba(168,255,120,0.04); }
+        .sitem.picked {
+          border-color: rgba(168,255,120,0.45);
+          background: rgba(168,255,120,0.07);
+          box-shadow: 0 0 0 1px rgba(168,255,120,0.18);
+        }
+        .sitem-emoji { font-size: 1.8rem; flex-shrink: 0; line-height: 1; }
+        .sitem-body { flex: 1; }
+        .sitem-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .92rem; letter-spacing: -.02em; margin-bottom: 5px; }
+        .sitem-bar-row { display: flex; align-items: center; gap: 8px; }
+        .sitem-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+        .sitem-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); opacity: .75; }
+        .sitem.picked .sitem-fill { opacity: 1; }
+        .sitem-pct { font-size: .68rem; color: var(--sub); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+        .sitem-radio {
+          width: 20px; height: 20px; border-radius: 50%;
+          border: 1.5px solid var(--border2); flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center; transition: all .2s;
+        }
+        .sitem.picked .sitem-radio {
+          border-color: var(--accent);
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          box-shadow: 0 0 10px rgba(168,255,120,0.3);
+        }
+        .sitem.picked .sitem-radio::after { content: ''; width: 8px; height: 8px; background: #061410; border-radius: 50%; }
+
+        .sitem-cta { padding: 14px 14px 20px; }
+        .confirm-btn {
+          width: 100%; padding: 15px; border: none; border-radius: 14px;
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          color: #061410;
+          font-family: 'Syne', sans-serif; font-weight: 700; font-size: .92rem;
+          cursor: pointer; transition: all .22s;
+          box-shadow: 0 4px 22px rgba(168,255,120,0.2);
+        }
+        .confirm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(168,255,120,0.36); }
+        .confirm-btn:disabled {
+          background: var(--glass); color: var(--sub);
+          cursor: not-allowed; box-shadow: none; transform: none;
+          border: 1px solid var(--glass-border);
+        }
+
+        .retry-btn {
+          width: 100%; margin-top: 10px; padding: 13px;
+          border: 1px solid var(--border2); border-radius: 14px;
+          background: transparent; color: var(--sub);
+          font-family: 'DM Sans', sans-serif;
+          font-size: .83rem; font-weight: 400; cursor: pointer; transition: all .2s;
+        }
+        .retry-btn:hover { border-color: rgba(168,255,120,0.3); color: var(--accent); }
+
+        #fileInput { display: none; }
+
+        /* ── NOT-IN-DATASET MESSAGE ── */
+        #notInDataset {
+          display: none;
+          position: relative; z-index: 10;
+          max-width: 540px; margin: 14px auto 0; padding: 0 20px;
+        }
+        .nid-card {
+          background: rgba(255,189,89,0.06);
+          border: 1px solid rgba(255,189,89,0.25);
+          border-radius: 16px; padding: 18px 20px;
+          display: flex; align-items: flex-start; gap: 14px;
+          backdrop-filter: blur(16px);
+        }
+        .nid-icon { font-size: 1.5rem; flex-shrink: 0; line-height: 1.2; }
+        .nid-text { flex: 1; }
+        .nid-title {
+          font-family: 'Syne', sans-serif; font-weight: 700;
+          font-size: .95rem; color: var(--amber); margin-bottom: 4px;
+        }
+        .nid-sub { font-size: .78rem; color: var(--sub); font-weight: 300; line-height: 1.55; }
+    </style>
+</head>
+<body>
+
+<!-- AMBIENT -->
+<div class="bg-fixed">
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+</div>
+<div class="bg-grid"></div>
+
+<!-- NAV -->
+<nav>
+    <a class="logo" href="#">
+        <div class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                <path d="M11 8v6M8 11h6"/>
+            </svg>
+        </div>
+        NutriLens
+    </a>
+    <a class="daily-btn" href="report.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+        </svg>
+        Daily Analysis
+    </a>
+</nav>
+
+<button onclick="goBack()" id="backBtn" style="position:fixed;bottom:24px;right:24px;z-index:999;padding:10px 20px;background:rgba(255,255,255,0.07);color:#f0f0f0;border:1px solid rgba(255,255,255,0.15);border-radius:30px;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;backdrop-filter:blur(12px);transition:all .2s;">← Back</button>
+
+<!-- HERO -->
+<div class="hero">
+    <h1 class="hero-title">Scan your food,<br><span class="hl">know what's inside.</span></h1>
+    <p class="hero-sub">Point your camera or upload a photo — AI identifies<br>the food and breaks down every macro instantly.</p>
+</div>
+
+<!-- MODE TOGGLE -->
+<div class="mode-toggle">
+    <div class="toggle-wrap">
+        <button class="tog-btn on" id="tabCam" onclick="switchMode('camera')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+            </svg>
+            Live Camera
+        </button>
+        <button class="tog-btn" id="tabUp" onclick="switchMode('upload')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Upload Photo
+        </button>
+    </div>
+</div>
+
+<!-- ZONE -->
+<div class="zone-wrap">
+    <!-- Camera box -->
+    <div class="cam-box" id="camBox">
+        <video id="camVid" autoplay playsinline muted></video>
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div class="sweep" id="sweep"></div>
+        <div class="overlay" id="overlayCAM">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="spin-ring"></div>
+            <div class="ov-label">Scanning food…</div>
+            <div class="ov-sub">AI is reading nutrients</div>
+        </div>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="drop-zone" id="dropZone"
+         onclick="document.getElementById('fileInput').click()"
+         ondragover="onDragOver(event)" ondragleave="onDragLeave()" ondrop="onDrop(event)">
+        <div class="dz-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+        </div>
+        <div class="dz-title">Drop your food photo here</div>
+        <div class="dz-sub">Supports JPG, PNG, WEBP<br>Any fruit, vegetable, snack or meal</div>
+        <button class="dz-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Choose File</button>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-box" id="previewBox">
+        <img id="previewImg" alt="food">
+        <button class="preview-change" onclick="changePhoto()">↩ Change Photo</button>
+        <div class="overlay" id="overlayUP">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="spin-ring"></div>
+            <div class="ov-label">Analyzing food…</div>
+            <div class="ov-sub">AI is reading nutrients</div>
+        </div>
+    </div>
+
+    <p class="cam-tip" id="camTip">Point at any food — fruit, vegetable, snack or meal</p>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" onchange="onFile(event)" style="display:none">
+
+<!-- ANALYZE BTN -->
+<div class="cta-wrap">
+    <button class="analyze-btn" id="analyzeBtn" onclick="doAnalyze()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Analyze Food
+    </button>
+</div>
+
+<!-- TRUST -->
+<div class="trust-strip">
+    <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        90%+ accuracy
+    </div>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Instant results
+    </div>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        100+ foods
+    </div>
+</div>
+
+<!-- NOT IN DATASET MESSAGE -->
+<div id="notInDataset">
+    <div class="nid-card">
+        <div class="nid-icon">👉</div>
+        <div class="nid-text">
+            <div class="nid-title">Food is not available in dataset</div>
+            <div class="nid-sub">The detected item could not be matched to any food in our nutrition database. Try a clearer photo or a supported food.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedFile = null;
+
+function onFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('dropZone').style.display = 'none';
+        document.getElementById('previewBox').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+
+    document.getElementById('analyzeBtn').disabled = false;
+}
+
+function changePhoto() {
+    selectedFile = null;
+    document.getElementById('previewBox').style.display = 'none';
+    document.getElementById('dropZone').style.display = 'flex';
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('fileInput').value = '';
+}
+
+function onDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragover'); }
+function onDragLeave() { document.getElementById('dropZone').classList.remove('dragover'); }
+function onDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('fileInput').files = dt.files;
+        onFile({ target: { files: [file] } });
+    }
+}
+
+function switchMode(mode) {
+    if (mode === 'camera') {
+        document.getElementById('tabCam').classList.add('on');
+        document.getElementById('tabUp').classList.remove('on');
+        document.getElementById('camBox').style.display = 'block';
+        document.getElementById('dropZone').style.display = 'none';
+        document.getElementById('previewBox').style.display = 'none';
+        startCamera();
+    } else {
+        document.getElementById('tabCam').classList.remove('on');
+        document.getElementById('tabUp').classList.add('on');
+        document.getElementById('camBox').style.display = 'none';
+        document.getElementById('dropZone').style.display = 'flex';
+        stopCamera();
+    }
+}
+
+let stream = null;
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('camVid').srcObject = stream;
+        document.getElementById('sweep').style.display = 'block';
+        document.getElementById('analyzeBtn').disabled = false;
+    } catch (e) {
+        alert('Camera access denied. Please use Upload mode.');
+        switchMode('upload');
+    }
+}
+function stopCamera() {
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    document.getElementById('sweep').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = true;
+}
+
+async function doAnalyze() {
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    document.getElementById('notInDataset').style.display = 'none';
+
+    const isCamera = document.getElementById('tabCam').classList.contains('on');
+    const overlay = isCamera
+        ? document.getElementById('overlayCAM')
+        : document.getElementById('overlayUP');
+    overlay.classList.add('show');
+
+    try {
+        let imgFile = selectedFile;
+
+        if (isCamera) {
+            const video = document.getElementById('camVid');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            imgFile = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+        }
+
+        if (!imgFile) {
+            alert('Please select an image first.');
+            overlay.classList.remove('show');
+            btn.disabled = false;
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', imgFile, imgFile.name || 'capture.jpg');
+
+        console.log('Sending to Spring Boot...');
+
+        let response;
+        try {
+            response = await fetch('http://localhost:8080/food/detect', {
+                method: 'POST',
+                body: formData
+            });
+        } catch (networkErr) {
+            overlay.classList.remove('show');
+            btn.disabled = false;
+            alert('Cannot connect to server. Make sure Spring Boot is running on port 8080.');
+            return;
+        }
+
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+
+        if (!response.ok) {
+            overlay.classList.remove('show');
+            btn.disabled = false;
+            alert('Server error: ' + response.status + '\n' + responseText);
+            return;
+        }
+
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            overlay.classList.remove('show');
+            btn.disabled = false;
+            alert('Invalid response from server: ' + responseText);
+            return;
+        }
+
+        console.log('Result:', data);
+        overlay.classList.remove('show');
+        btn.disabled = false;
+
+        // Reject unknown / unrecognized / no-nutrition results
+        if (!data.food || data.food === 'unknown' || data.calories === 'N/A') {
+            document.getElementById('notInDataset').style.display = 'block';
+            document.getElementById('notInDataset').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // Hide the message if a valid food was found
+        document.getElementById('notInDataset').style.display = 'none';
+
+        // Save to localStorage for report page
+        const existing = JSON.parse(localStorage.getItem('nutrilens_scanned') || '[]');
+        existing.push({
+            food: data.food, qty: '1',
+            calories: data.calories, protein: data.protein,
+            fat: data.fat, fiber: data.fiber, sugar: data.sugar,
+            health: data.health, risk: data.risk,
+            confidence: data.confidence,
+            time: new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})
+        });
+        localStorage.setItem('nutrilens_scanned', JSON.stringify(existing));
+
+        // Navigate to result page
+        const params = new URLSearchParams({
+            food:       data.food,
+            confidence: data.confidence,
+            calories:   data.calories,
+            protein:    data.protein,
+            fat:        data.fat,
+            fiber:      data.fiber,
+            sugar:      data.sugar,
+            health:     data.health,
+            risk:       data.risk
+        });
+        window.location.href = 'result.html?' + params.toString();
+
+    } catch (err) {
+        console.error('Unexpected error:', err);
+        overlay.classList.remove('show');
+        btn.disabled = false;
+        alert('Unexpected error: ' + err.message);
+    }
+}
+
+// Init: show upload mode by default
+switchMode('upload');
+</script>
+<script>
+function goBack() {
+    window.location.href = "index.html";
+}
+</script>
+</body>
+</html>

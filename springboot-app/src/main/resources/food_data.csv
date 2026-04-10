@@ -1,0 +1,37 @@
+Food,Calories,Protein,Fat,Fiber,Sugar,Health Effect,Disease Risk
+apple,52,0.3,0.2,2.4,10,"Good for heart, improves digestion",Excess may increase sugar intake
+banana,89,1.1,0.3,2.6,12,Energy booster,High sugar
+beetroot,43,1.6,0.2,2.8,6.8,Improves blood flow,Kidney stone risk if excess
+bell pepper,31,1,0.3,2.1,4.2,"Boosts immunity, rich in vitamin C",Very low risk
+cabbage,25,1.3,0.1,2.5,3.2,Improves digestion,Gas issues
+capsicum,20,0.9,0.2,1.7,3.2,Vitamin rich,Very low risk
+carrot,41,0.9,0.2,2.8,4.7,Good for eyesight,Excess may cause skin yellowing
+cauliflower,25,1.9,0.3,2,1.9,Detox support,Gas issues
+chilli pepper,40,2,0.4,1.5,5,Boost metabolism,Stomach irritation
+corn,86,3.2,1.2,2.7,6.3,Energy booster,High intake may increase weight
+cucumber,16,0.7,0.1,0.5,1.7,Hydration,Very low risk
+eggplant,25,1,0.2,3,3.5,Good for heart,Very low risk
+garlic,149,6.4,0.5,2.1,1,Improves heart health,May cause acidity
+ginger,80,1.8,0.8,2,1.7,Anti-inflammatory,May cause heartburn
+grapes,69,0.7,0.2,0.9,16,Antioxidant rich,High sugar
+jalepeno,29,0.9,0.4,2.8,4.1,Boost metabolism,May irritate stomach
+kiwi,61,1.1,0.5,3,9,Boost immunity,Allergy risk
+lemon,29,1.1,0.3,2.8,2.5,"Detox, vitamin C",Acidity
+lettuce,15,1.4,0.2,1.3,0.8,Good for hydration,Very low risk
+mango,60,0.8,0.4,1.6,14,Good for skin,High sugar
+onion,40,1.1,0.1,1.7,4.2,Improves immunity,Gas issues
+orange,47,0.9,0.1,2.4,9.4,Rich in vitamin C,Acidity if excess
+paprika,282,14,13,34,10,Rich in antioxidants,Excess may irritate
+pear,57,0.4,0.1,3.1,10,Good digestion,Very low risk
+peas,81,5.4,0.4,5.7,5.7,Good protein source,Gas issues
+pineapple,50,0.5,0.1,1.4,10,Aids digestion,Acidity
+pomegranate,83,1.7,1.2,4,14,Good for heart,High sugar
+potato,77,2,0.1,2.2,0.8,Energy source,High glycemic index
+raddish,16,0.7,0.1,1.6,1.9,Detox support,Very low risk
+soy beans,446,36,20,9.3,7,High protein,Hormonal imbalance if excess
+spinach,23,2.9,0.4,2.2,0.4,Iron rich,Kidney stone risk if excess
+sweetcorn,96,3.4,1.5,2.4,6.3,Energy source,Weight gain risk
+sweetpotato,86,1.6,0.1,3,4.2,Good for eyes,High carb
+tomato,18,0.9,0.2,1.2,2.6,Good for skin,Acidity
+turnip,28,0.9,0.1,1.8,4.6,Good for bones,Very low risk
+watermelon,30,0.6,0.2,0.4,6.2,Hydration,High sugar
